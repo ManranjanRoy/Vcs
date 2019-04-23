@@ -29,20 +29,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    List<Data> eventlist;
-    RecyclerView eventrecycler;
-    TestAdaptor eventAdaptor;
+     List<Data> eventlist;
+     TestAdaptor eventAdaptor;
+     RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        eventrecycler = findViewById(R.id.rcv);
-        eventrecycler.setHasFixedSize(true);
-        eventrecycler.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-
-        eventlist = new ArrayList<>();
+        recyclerView=findViewById(R.id.rcv);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        eventlist=new ArrayList<>();
 
 
         //this method will fetch and parse json
@@ -56,54 +55,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadUsers() {
         String fetch_upcoming_events="http://pivotnet.co.in/SocietyManagement/Android/fetchupcomingevents.php";
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, fetch_upcoming_events,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            //converting the string to json array object
-                            JSONArray array = new JSONArray(response);
-                            // Toast.makeText(getActivity(),"entered"+array.length(),Toast.LENGTH_SHORT).show();
-                            //traversing through all the object
-                            for (int i = 0; i < array.length(); i++) {
+        StringRequest stringRequest=new StringRequest(Request.Method.POST, fetch_upcoming_events, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONArray array=new JSONArray(response);
 
-                                //getting product object from json array
-                                JSONObject user = array.getJSONObject(i);
+                    for (int i=0;i<=array.length();i++){
 
-                                //adding the product to product list
-                                //String visitor_id,visitor_name,visitor_phone_num,visitor_vechile_num,
-                                // mem_name,mem_flat_num,mem_phone_num,in_time_date,visitor_img;
-                                eventlist.add(0, new Data(
-                                        user.getString("update_upcoming_events_id")
+                        JSONObject object=array.getJSONObject(i);
 
-                                       /* user.getString("mem_name"),
-                                        user.getString("mem_flat_num"),
-                                        user.getString("mem_phone_num")
-                                        , user.getString("in_time_date"),
-                                        user.getString("visitor_img")*/
+                        eventlist.add(new Data(object.getString("update_upcoming_events_id"))
+                        );
 
-                                ));
-
-
-                            }
-
-
-                            //creating adapter object and setting it to recyclerview
-                            eventAdaptor = new TestAdaptor(getApplicationContext(), eventlist);
-                            eventrecycler.setAdapter(eventAdaptor);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        eventAdaptor=new TestAdaptor(getApplicationContext(),eventlist);
+                        recyclerView.setAdapter(eventAdaptor);
                     }
-                }, new Response.ErrorListener() {
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
 
             }
-        }
-        );
-
-        //adding our stringrequest to queue
+        });
         Volley.newRequestQueue(getApplicationContext()).add(stringRequest);
     }
 }
